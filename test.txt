@@ -2,8 +2,9 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>日历推算程序</title>
+    <title>日历推算程序（增强版）</title>
     <style>
+        /* 基础样式 */
         body {
             background-color: #f0f0f0;
             display: flex;
@@ -12,47 +13,65 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif; /* 更现代的字体 */
         }
 
+        /* 主容器样式 */
         .container {
             background-color: white;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); /* 更柔和的阴影 */
+            width: 320px; /* 固定宽度保持布局稳定 */
         }
 
+        /* 输入框统一样式 */
         input {
             margin: 8px;
-            padding: 8px;
-            width: 150px;
+            padding: 10px;
+            width: 180px; /* 加宽输入框 */
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 6px;
+            transition: border-color 0.3s; /* 添加过渡效果 */
         }
 
+        input:focus {
+            border-color: #666; /* 聚焦状态提示 */
+            outline: none;
+        }
+
+        /* 结果输出区域 */
         #output {
-            margin: 20px;
-            padding: 12px;
-            width: 200px;
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            min-height: 20px;
+            font-weight: 500;
         }
 
+        /* 按钮样式增强 */
         button {
-            background-color: black;
+            background-color: #2c3e50;
             color: white;
             padding: 12px 24px;
             border: none;
-            border-radius: 10px;
+            border-radius: 25px; /* 更圆润的按钮 */
             cursor: pointer;
             font-size: 16px;
             margin-top: 15px;
+            transition: transform 0.2s, background-color 0.3s;
+            width: 100%; /* 全宽按钮 */
+        }
+
+        button:hover {
+            background-color: #34495e;
+            transform: translateY(-1px); /* 悬停微动效 */
         }
 
         .input-group {
-            margin: 10px 0;
+            margin: 12px 0;
             text-align: center;
         }
     </style>
@@ -60,44 +79,86 @@
 <body>
     <div class="container">
         <div class="input-group">
-            <input type="number" id="year" placeholder="请输入年份">
+            <input type="number" id="year" placeholder="年份（如2023）" min="1900" max="2100">
         </div>
         <div class="input-group">
-            <input type="number" id="month" placeholder="请输入月份" min="1" max="12">
+            <input type="number" id="month" placeholder="月份（1-12）" min="1" max="12">
         </div>
         <div class="input-group">
-            <input type="number" id="day" placeholder="请输入日期" min="1" max="31">
+            <input type="number" id="day" placeholder="日期（1-31）" min="1" max="31">
         </div>
         <div class="input-group">
-            <input type="number" id="days" placeholder="间隔天数">
+            <input type="number" id="days" placeholder="间隔天数（正负均可）">
         </div>
         
-        <div id="output">计算结果将显示在这里</div>
-        <button onclick="calculate()">计算</button>
+        <div id="output">请输入有效日期</div>
+        <button onclick="calculate()">计算新日期</button>
     </div>
 
     <script>
+        /**
+         * 日期有效性验证函数
+         * @param {number} y - 年份
+         * @param {number} m - 月份（1-12）
+         * @param {number} d - 日期
+         * @returns {boolean} 是否有效日期
+         */
+        function isValidDate(y, m, d) {
+            // 创建日期对象（注意月份需要减1）
+            const date = new Date(y, m - 1, d);
+            // 验证：创建的日期是否与输入参数匹配
+            return date.getFullYear() === y && 
+                   date.getMonth() === m - 1 && 
+                   date.getDate() === d;
+        }
+
+        /**
+         * 主计算函数
+         */
         function calculate() {
-            // 获取输入值
+            // 获取并转换输入值
             const year = parseInt(document.getElementById('year').value);
-            const month = parseInt(document.getElementById('month').value) - 1; // 月份从0开始
+            const month = parseInt(document.getElementById('month').value);
             const day = parseInt(document.getElementById('day').value);
             const days = parseInt(document.getElementById('days').value);
 
-            // 创建初始日期对象
-            const initialDate = new Date(year, month, day);
-            
-            // 计算新日期
-            const newDate = new Date(initialDate);
-            newDate.setDate(initialDate.getDate() + days);
+            // 输入有效性验证
+            if (isNaN(year) || year < 1900 || year > 2100 ||
+                isNaN(month) || month < 1 || month > 12 ||
+                isNaN(day) || day < 1 || day > 31 ||
+                !isValidDate(year, month, day)) {
+                document.getElementById('output').textContent = "⚠️ 请输入有效日期";
+                return;
+            }
 
-            // 格式化输出
-            const format = (num) => String(num).padStart(2, '0');
-            const result = `${newDate.getFullYear()}-${format(newDate.getMonth()+1)}-${format(newDate.getDate())}`;
+            // 创建初始日期对象（注意：JavaScript月份从0开始）
+            const initialDate = new Date(year, month - 1, day);
             
-            // 显示结果
-            document.getElementById('output').textContent = result;
+            try {
+                // 计算新日期
+                const newDate = new Date(initialDate);
+                newDate.setDate(newDate.getDate() + days);
+
+                // 格式化日期组件
+                const format = num => String(num).padStart(2, '0');
+                const result = `${newDate.getFullYear()}-${format(newDate.getMonth()+1)}-${format(newDate.getDate())}`;
+
+                // 显示结果
+                document.getElementById('output').textContent = result;
+                document.getElementById('output').style.color = "#2c3e50";
+            } catch (error) {
+                // 异常处理
+                document.getElementById('output').textContent = "⚠️ 计算错误";
+                document.getElementById('output').style.color = "#e74c3c";
+            }
         }
+
+        // 为输入框添加回车键支持
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') calculate();
+            });
+        });
     </script>
 </body>
 </html>
